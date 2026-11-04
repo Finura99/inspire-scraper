@@ -1,42 +1,47 @@
 from fetcher import fetch_page
-from parser import extract_links
-from filters import match_keywords
+from parser import extract_emails
+from filters import filter_emails
 from output import save_to_csv
+from config import SOURCES
 
 
-# Websites we want to scrape
-urls = [
-    "https://www.bbc.com/news",
-    "https://www.reuters.com/technology",
-    "https://www.ft.com/technology"
-]
+def main():
 
-# Store results collected across every website
-results = []
+    results = []
 
-# Keep track of URLs already collected across every website
-seen_urls = set()
+    for source in SOURCES:
+
+        print(f"Scanning: {source['name']}")
+
+        html = fetch_page(source["url"])
+
+        if not html:
+            continue
+
+        contacts = extract_emails(
+            html,
+            source["url"],
+            source["name"]
+        )
+
+        results.extend(contacts)
+
+    # Keep only relevant departmental contacts
+    filtered_results = filter_emails(results)
+
+    # Remove duplicate email addresses
+    unique_results = {
+        result["email"]: result
+        for result in filtered_results
+    }
+
+    final_results = list(unique_results.values())
+
+    save_to_csv(final_results)
+
+    print(f"Total extracted: {len(results)}")
+    print(f"Relevant unique contacts: {len(final_results)}")
 
 
-# Fetch and parse every configured website
-for url in urls:
-    html = fetch_page(url)
-
-    if not html:
-        continue
-
-    page_results = extract_links(html, url, seen_urls)
-    results.extend(page_results)
-
-
-# Keywords used to decide whether a result is relevant
-keywords = ["business", "technology"]
-
-# Filter the collected results
-filtered_results = match_keywords(results, keywords)
-
-# Export the relevant results
-save_to_csv(filtered_results)
-
-print(f"Collected: {len(results)} results")
-print(f"Matched: {len(filtered_results)} results")
+if __name__ == "__main__":
+    main()

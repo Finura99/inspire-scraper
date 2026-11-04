@@ -1,33 +1,38 @@
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
+import re
 
-def extract_links(html, base_url, seen_urls):
+def extract_emails(html, source_url, source_name):
     soup = BeautifulSoup(html, "html.parser")
-    links = soup.find_all("a")
+
+    # Remove scripts and styles before searching page text
+    for element in soup(["script", "style"]):
+        element.decompose()
+
+    emails = set()
+
+    # Extract email addresses from mailto links
+    for link in soup.find_all("a", href=True):
+        href = link["href"]
+
+        if href.lower().startswith("mailto:"):
+            email = href[7:].split("?")[0].strip().lower()
+            emails.add(email)
+
+    # Extract email addresses visible in page text
+    pattern = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
+
+    for email in re.findall(pattern, soup.get_text(" ")):
+        emails.add(email.lower())
 
     results = []
 
-    for link in links[:10]:
-        text = link.text.strip()
-        href = link.get("href")
-
-        if not text:
-            continue
-
-        if not href:
-            continue
-
-        full_url = urljoin(base_url, href)
-
-        if full_url in seen_urls:
-            continue
-
-        seen_urls.add(full_url)
-
+    for email in sorted(emails):
         results.append({
-            "text": text,
-            "url": full_url
+            "source": source_name,
+            "email": email,
+            "url": source_url
         })
 
     return results
