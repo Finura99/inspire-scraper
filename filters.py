@@ -1,44 +1,67 @@
-def match_keywords(results, keywords):
-    filtered_results = []
+import re
 
-    for result in results:
-        text = result["text"].lower()
-        matched_keywords = []
+from config import OPPORTUNITY_CATEGORIES
 
-        for keyword in keywords:
-            if keyword in text:
-                matched_keywords.append(keyword)
 
-        if matched_keywords:
-            result["matched_keywords"] = matched_keywords
-            filtered_results.append(result)
+def _contains_phrase(text, phrase):
 
-    return filtered_results
-
-def filter_emails(results):
-
-    relevant_prefixes = (
-        "careers",
-        "employers",
-        "partnerships",
-        "business",
-        "training",
-        "recruitment",
-        "enquiries",
-        "info",
-        "contact",
-        "enterprise",
-        "engagement",
-        "outreach",
+    pattern = (
+        r"(?<!\w)"
+        + re.escape(phrase)
+        + r"(?!\w)"
     )
 
-    filtered = []
+    return re.search(
+        pattern,
+        text,
+        re.IGNORECASE,
+    ) is not None
 
-    for result in results:
-        email = result["email"].lower()
-        local_part = email.split("@")[0]
 
-        if local_part.startswith(relevant_prefixes):
-            filtered.append(result)
+def classify_article(article, categories=None):
 
-    return filtered
+    categories = (
+        categories
+        if categories is not None
+        else OPPORTUNITY_CATEGORIES
+    )
+
+    title = article.get("title", "")
+    description = article.get("description", "")
+    body = article.get("content", "")
+
+    matches = {}
+
+    for category, phrases in categories.items():
+
+        found = [
+            phrase
+            for phrase in phrases
+            if any(
+                _contains_phrase(segment, phrase)
+                for segment in (
+                    title,
+                    description,
+                    body,
+                )
+            )
+        ]
+
+        if found:
+            matches[category] = found
+
+    return matches
+
+
+def describe_opportunity(matches):
+
+    parts = [
+        f"{category} (mentions: {', '.join(terms[:2])})"
+        for category, terms in matches.items()
+    ]
+
+    return (
+        "Possible relevance to "
+        + "; ".join(parts)
+        + ". Requires human review."
+    )
