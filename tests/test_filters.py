@@ -1,5 +1,5 @@
-from filters import classify_article, describe_opportunity
-from summarizer import summarise_article
+from src.filters import classify_article, describe_opportunity
+from src.summarizer import summarise_article
 
 
 def test_classification_matches_two_fusion_service_areas():

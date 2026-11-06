@@ -1,6 +1,6 @@
 import httpx
 
-from fetcher import Fetcher
+from src.fetcher import Fetcher
 
 
 def test_robots_disallow_blocks_fetching():

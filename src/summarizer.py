@@ -1,6 +1,6 @@
 import re
 
-from filters import _contains_phrase
+from src.filters import _contains_phrase
 
 
 def summarise_article(article, matches, max_chars=290):

@@ -1,7 +1,7 @@
 import csv
 
-from main import run_pipeline
-from output import save_to_csv
+from src.main import run_pipeline
+from src.output import save_to_csv
 
 
 class FakeFetcher:

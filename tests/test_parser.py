@@ -1,4 +1,4 @@
-from parser import canonical_url, extract_article_text, extract_articles
+from src.parser import canonical_url, extract_article_text, extract_articles
 
 
 RSS = """<?xml version="1.0"?>

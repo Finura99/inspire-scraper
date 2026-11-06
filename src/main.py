@@ -6,21 +6,21 @@ from config import (
     SOURCES,
 )
 
-from fetcher import Fetcher
+from src.fetcher import Fetcher
 
-from filters import (
+from src.filters import (
     classify_article,
     describe_opportunity,
 )
 
-from output import save_to_csv
+from src.output import save_to_csv
 
-from parser import (
+from src.parser import (
     extract_article_text,
     extract_articles,
 )
 
-from summarizer import summarise_article
+from src.summarizer import summarise_article
 
 
 LOGGER = logging.getLogger(__name__)
